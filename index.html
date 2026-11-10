@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="OpenCode Inkling 2 Small sessions that went wrong.">
+  <title>Inkling for Greatness</title>
+  <link rel="stylesheet" href="style.css?v=8">
+  <script src="tabs.js?v=1" defer></script>
+  <script src="theme.js?v=1" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Inkling for Greatness</h1>
+      <p>OpenCode Inkling 2 Small sessions that went wrong.</p>
+    </header>
+
+    <div class="theme-controls"><button class="theme-toggle" type="button">Dark mode</button></div>
+
+    <div class="frame">
+      <div class="session-tabs" role="tablist" aria-label="Sessions">
+        <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
+      </div>
+
+      <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
+        <h2>Aegisub shell context menu</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>In this repo find which commit fixes Aegisub entries being missing from Windows Explorer shell context menus. Make a note of any additional things you find.<br><br>Dont run or do tests, don't look at upstream, don't look outside this folder.</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The search became anchored on file associations. Once the agent found an installer commit that fixed a real path mismatch, it built a convincing explanation around it and stopped looking for other causes. The commit, "Fix missing data for compiled .exe", was authored by the user and added a <code>VarFileInfo</code> translation entry to the executable. That entry declares the language and character encoding of its existing version strings, including the file description. It lets Windows find that information when identifying the application, providing a link to the missing Explorer entries. The session did not even look into this behavior.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>To find the commit, the agent should have treated the installer fix as one candidate and examined the history of other Windows-facing files, including <code>src/res/res.rc</code>. To understand it, the agent should have compared the added translation entry with the existing version strings and investigated how Windows uses that information, instead of discarding the commit because the connection was not immediately clear.</p>
+        </div>
+        <div class="session-links"><a href="sessions/aegisub-shell-context-menu-fix.json">View the full session JSON</a><a href="repo-patch/varfileinfo-fix.patch" download>Download the fix patch</a></div>
+        <p class="additional-note"><strong>Note 1:</strong> To apply the fix, download the patch and run <code>git apply "path/to/varfileinfo-fix.patch"</code> from the root of an Aegisub checkout that does not already contain the fix. Commit the change with the title <code>Fix missing data for compiled .exe</code>, then add a few unrelated dummy commits afterward so the fix is not the latest commit.</p>
+        <p class="additional-note"><strong>Note 2:</strong> In 10 attempts, the agent found the correct commit twice but discarded it because it did not understand how the change fixed the issue.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
