@@ -23,6 +23,7 @@
     <div class="frame">
       <div class="session-tabs" role="tablist" aria-label="Sessions">
         <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
+        <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
       </div>
 
       <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
@@ -42,6 +43,24 @@
         <div class="session-links"><a href="sessions/aegisub-shell-context-menu-fix.json">View the full session JSON</a><a href="repo-patch/varfileinfo-fix.patch" download>Download the fix patch</a></div>
         <p class="additional-note"><strong>Note 1:</strong> To apply the fix, download the patch and run <code>git apply "path/to/varfileinfo-fix.patch"</code> from the root of an Aegisub checkout that does not already contain the fix. Commit the change with the title <code>Fix missing data for compiled .exe</code>, then add a few unrelated dummy commits afterward so the fix is not the latest commit.</p>
         <p class="additional-note"><strong>Note 2:</strong> In 10 attempts, the agent found the correct commit twice but discarded it because it did not understand how the change fixed the issue.</p>
+      </section>
+
+      <section class="session-panel" role="tabpanel" id="session-clone" aria-labelledby="tab-clone" tabindex="0" hidden>
+        <h2>Cloning the wrong repository</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>can you clone nvia aegi from our nion-tin account</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent mistook an incomplete repository listing for proof that the requested repo did not exist. It then treated the user's clarification as ambiguous and cloned a different Aegisub fork.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have checked the <code>nion-tin</code> account's repositories using that account, considered that the requested repository might be private, and confirmed the match before cloning.</p>
+        </div>
+        <div class="session-links"><a href="sessions/clone-nvia-aegi-from-nion-tin.json">View the full session JSON</a></div>
+        <p class="additional-note"><strong>Note:</strong> The repository name was misspelled in the original request, but the agent asked for clarification and still missed it.</p>
       </section>
     </div>
   </main>
