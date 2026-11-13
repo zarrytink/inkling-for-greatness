@@ -4,6 +4,7 @@ const tabs = [...tabList.querySelectorAll('[role="tab"]')];
 const panels = tabs
   .map(tab => document.getElementById(tab.getAttribute('aria-controls')))
   .filter(Boolean);
+const selectedTabKey = 'inkling-for-greatness:selected-tab';
 
 // Keep the frame at the height of its tallest panel so switching tabs does not
 // move the page or make the scrollbar appear and disappear.
@@ -17,7 +18,7 @@ function syncPanelHeight() {
   });
 }
 
-function selectTab(selected) {
+function selectTab(selected, persist = true) {
   for (const tab of tabs) {
     const active = tab === selected;
     tab.setAttribute('aria-selected', String(active));
@@ -25,7 +26,26 @@ function selectTab(selected) {
     const panel = document.getElementById(tab.getAttribute('aria-controls'));
     if (panel) panel.hidden = !active;
   }
+  if (persist) {
+    try {
+      localStorage.setItem(selectedTabKey, selected.id);
+    } catch {
+      // Ignore storage failures; tab switching still works normally.
+    }
+  }
 }
+
+let savedTabId = null;
+try {
+  savedTabId = localStorage.getItem(selectedTabKey);
+} catch {
+  // Ignore storage failures and use the HTML-selected tab.
+}
+const initialTab = tabs.find(tab => tab.id === savedTabId)
+  || tabs.find(tab => tab.getAttribute('aria-selected') === 'true')
+  || tabs[0];
+if (initialTab) selectTab(initialTab, false);
+
 syncPanelHeight();
 window.addEventListener('resize', syncPanelHeight);
 tabList.addEventListener('click', event => {
