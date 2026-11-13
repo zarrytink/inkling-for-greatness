@@ -1,6 +1,22 @@
 ﻿// Each tab points to its panel through aria-controls.
 const tabList = document.querySelector('[role="tablist"]');
 const tabs = [...tabList.querySelectorAll('[role="tab"]')];
+const panels = tabs
+  .map(tab => document.getElementById(tab.getAttribute('aria-controls')))
+  .filter(Boolean);
+
+// Keep the frame at the height of its tallest panel so switching tabs does not
+// move the page or make the scrollbar appear and disappear.
+function syncPanelHeight() {
+  const hidden = panels.map(panel => panel.hidden);
+  panels.forEach(panel => { panel.style.minHeight = ''; panel.hidden = false; });
+  const height = Math.max(...panels.map(panel => panel.offsetHeight));
+  panels.forEach((panel, index) => {
+    panel.hidden = hidden[index];
+    panel.style.minHeight = `${height}px`;
+  });
+}
+
 function selectTab(selected) {
   for (const tab of tabs) {
     const active = tab === selected;
@@ -10,6 +26,8 @@ function selectTab(selected) {
     if (panel) panel.hidden = !active;
   }
 }
+syncPanelHeight();
+window.addEventListener('resize', syncPanelHeight);
 tabList.addEventListener('click', event => {
   const tab = event.target.closest('[role="tab"]');
   if (tab && tabs.includes(tab)) selectTab(tab);
