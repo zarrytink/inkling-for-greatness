@@ -25,6 +25,7 @@
         <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
         <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
         <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
+        <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
       </div>
 
       <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
@@ -80,7 +81,24 @@
         </div>
         <div class="session-links"><a href="sessions/installern-t.json">View the full session JSON</a></div>
       </section>
-    </div>
+
+      <section class="session-panel" role="tabpanel" id="session-question-execution" aria-labelledby="tab-question-execution" tabindex="0" hidden>
+        <h2>Question=Execution</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>Standalone WinForms executable that looks like an installer, instead of an installer?<br><br>Im asking why did you build that iinstead of the installer I asked</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent treated a question about its earlier choice as a new request, and started checking download tools and researching setups.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have answered the question directly.</p>
+        </div>
+        <div class="session-links"><a href="sessions/question-execution.json">View the full session JSON</a></div>
+        <p class="additional-note"><strong>Note:</strong> The prompt is split into two parts because the agent misunderstood the first question, so I stopped it and sent the second message to make clear that I was asking why it had made a choice.</p>
+      </section>    </div>
     <footer><p><a href="https://github.com/zarrytink/inkling-for-greatness">View this site's repository</a></p></footer>
   </main>
 </body>
