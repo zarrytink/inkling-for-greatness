@@ -24,6 +24,7 @@
       <div class="session-tabs" role="tablist" aria-label="Sessions">
         <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
         <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
+        <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
       </div>
 
       <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
@@ -61,6 +62,23 @@
         </div>
         <div class="session-links"><a href="sessions/clone-nvia-aegi-from-nion-tin.json">View the full session JSON</a></div>
         <p class="additional-note"><strong>Note:</strong> The repository name was misspelled in the original request, but the agent asked for clarification and still missed it.</p>
+      </section>
+
+      <section class="session-panel" role="tabpanel" id="session-installern-t" aria-labelledby="tab-installern-t" tabindex="0" hidden>
+        <h2>Installern't</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>On dekstop, make a "yonner installer" folder, and I want you to build a windows installer there whos only job is to loop and never stop.<br><br>If you need any external deps, make sure its that folder only.</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent answered a request for a Windows installer by making a standalone WinForms mock, and, while creating it, never checked whether the target path already existed or was occupied. It used <code>-Force</code> and wrote directly into the folder, risking silent overwrites before confirming what was there.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have clarified whether the user wanted a real installer or a mock, and it should have checked the target folder before overwriting files.</p>
+        </div>
+        <div class="session-links"><a href="sessions/installern-t.json">View the full session JSON</a></div>
       </section>
     </div>
     <footer><p><a href="https://github.com/zarrytink/inkling-for-greatness">View this site's repository</a></p></footer>
