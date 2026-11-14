@@ -26,6 +26,7 @@
         <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
         <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
         <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
+        <button type="button" role="tab" id="tab-lost-in-wsl" aria-controls="session-lost-in-wsl" aria-selected="false" tabindex="-1">Lost in WSL</button>
       </div>
 
       <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
@@ -98,7 +99,26 @@
         </div>
         <div class="session-links"><a href="sessions/question-execution.json">View the full session JSON</a></div>
         <p class="additional-note"><strong>Note:</strong> The prompt is split into two parts because the agent misunderstood the first question, so I stopped it and sent the second message to make clear that I was asking why it had made a choice.</p>
-      </section>    </div>
+      </section>
+
+      <section class="session-panel" role="tabpanel" id="session-lost-in-wsl" aria-labelledby="tab-lost-in-wsl" tabindex="0" hidden>
+        <h2>Lost in WSL</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>Can you check why my yonner installer is stuck?</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent never recognized that its shell was running inside WSL, even after reasoning about the environment. The session showed <code>/init</code>, a Plan 9 process, and a Windows Git path under <code>/mnt/c</code>, but the agent never identified what those clues meant.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have identified the environment properly after reasoning about it. A quick check of <code>/proc/version</code>, <code>uname -a</code>, or <code>/proc/sys/kernel/osrelease</code> would have revealed WSL.</p>
+        </div>
+        <div class="session-links"><a href="sessions/lost-in-wsl.json">View the full session JSON</a></div>
+        <p class="additional-note"><strong>Note:</strong> I know it was technically my fault for running the agent in WSL, but I believe it should have recognized that it was running inside WSL.</p>
+      </section>
+    </div>
     <footer><p><a href="https://github.com/zarrytink/inkling-for-greatness">View this site's repository</a></p></footer>
   </main>
 </body>
