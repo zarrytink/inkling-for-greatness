@@ -1,0 +1,752 @@
+diff --git a/apps/web/src/components/chat/ModelPickerContent.tsx b/apps/web/src/components/chat/ModelPickerContent.tsx
+index bc75277..a99b357 100644
+--- a/apps/web/src/components/chat/ModelPickerContent.tsx
++++ b/apps/web/src/components/chat/ModelPickerContent.tsx
+@@ -1,4 +1,3 @@
+-import { useLegendListRef } from "~/hooks/useLegendListRef";
+ import {
+   ANTIGRAVITY_DEFAULT_MODEL,
+   type ProviderInstanceId,
+@@ -21,9 +20,22 @@ import {
+   useRef,
+   type ReactNode,
+   type RefObject,
++  type KeyboardEvent as ReactKeyboardEvent,
+ } from "react";
+ import { ModelListRow } from "./ModelListRow";
+ import { ModelPickerSidebar } from "./ModelPickerSidebar";
++import { ModelPickerResizeHandle } from "./ModelPickerResizeHandle";
++import { RESIZABLE_WIDTH_PROPERTY } from "~/hooks/useResizableWidth";
++import {
++  RESIZABLE_HEIGHT_PROPERTY,
++  useModelPickerResize,
++  MODEL_PICKER_MIN_WIDTH,
++  MODEL_PICKER_MAX_WIDTH,
++  MODEL_PICKER_MIN_HEIGHT,
++  MODEL_PICKER_MAX_HEIGHT,
++  MODEL_PICKER_DEFAULT_WIDTH,
++  MODEL_PICKER_DEFAULT_HEIGHT,
++} from "./useModelPickerResize";
+ import { useProviderWorkspaceSnapshotRefresh } from "./useProviderWorkspaceSnapshotRefresh";
+ import { getProviderStatusMessage, hasProviderSetup } from "./ProviderStatusBanner";
+ import {
+@@ -56,7 +68,6 @@ import {
+ } from "~/hooks/useSettings";
+ import { announce } from "~/lib/announce";
+ import { cn } from "~/lib/utils";
+-import { getVirtualizedScrollFadeClassName } from "../ui/scroll-area";
+ import { TooltipProvider } from "../ui/tooltip";
+ import { InlineButton } from "../ui/button";
+ import {
+@@ -270,15 +281,9 @@ function ModelPickerList({
+   extraData: unknown;
+   renderItem: (props: { item: string; index: number }) => ReactNode;
+ }) {
+-  const [showTopScrollFade, setShowTopScrollFade] = useState(false);
+-  const [showBottomScrollFade, setShowBottomScrollFade] = useState(false);
+-  const updateScrollFades = () => {
+-    const metrics = listRef.current?.getState();
+-    if (!metrics) return;
+-    setShowTopScrollFade(!metrics.isAtStart);
+-    setShowBottomScrollFade(!metrics.isAtEnd);
++  const scrollRef = (node: LegendListRef | null) => {
++    listRef.current = node;
+   };
+-  const scrollRef = useLegendListRef(listRef, updateScrollFades);
+ 
+   return (
+     <div
+@@ -299,16 +304,7 @@ function ModelPickerList({
+           recycleItems
+           contentContainerClassName="pl-2 pr-px"
+           ItemSeparatorComponent={ModelListSeparator}
+-          onLayout={updateScrollFades}
+-          onScroll={updateScrollFades}
+-          onReady={updateScrollFades}
+-          className={cn(
+-            "scrollbar-gutter-stable h-full overflow-x-hidden overscroll-y-contain py-1.5 [&::-webkit-scrollbar-track]:my-2",
+-            getVirtualizedScrollFadeClassName({
+-              top: showTopScrollFade,
+-              bottom: showBottomScrollFade,
+-            }),
+-          )}
++          className="scrollbar-gutter-stable h-full overflow-x-hidden overscroll-y-contain py-1.5 [&::-webkit-scrollbar-track]:my-2"
+         />
+       </ComboboxListVirtualized>
+     </div>
+@@ -370,6 +366,17 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
+   const [searchQuery, setSearchQuery] = useState("");
+   const modelListRef = useRef<LegendListRef | null>(null);
+   const pickerContentRef = useRef<HTMLDivElement>(null);
++  const {
++    width,
++    height,
++    popupSide,
++    widthHandlers,
++    heightHandlers,
++    setWidth,
++    setHeight,
++    resetWidth,
++    resetHeight,
++  } = useModelPickerResize(pickerContentRef);
+   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- publishes this picker's mount to global keydown handlers
+   useLayoutEffect(() => registerModelPickerContent(), []);
+   const highlightedModelKeyRef = useRef<string | null>(null);
+@@ -844,25 +851,64 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
+     announce(`Model: ${name ?? selectedSlug}`, "model-picker");
+   };
+ 
++  const handleResizeKeyDown = (axis: "x" | "y") => (event: ReactKeyboardEvent<HTMLElement>) => {
++    if (event.altKey || event.ctrlKey || event.metaKey) return;
++    const current =
++      axis === "x"
++        ? (width ?? MODEL_PICKER_DEFAULT_WIDTH)
++        : (height ?? MODEL_PICKER_DEFAULT_HEIGHT);
++    const growKey = axis === "x" ? "ArrowRight" : popupSide === "top" ? "ArrowUp" : "ArrowDown";
++    const shrinkKey = axis === "x" ? "ArrowLeft" : popupSide === "top" ? "ArrowDown" : "ArrowUp";
++    let next: number | undefined;
++    if (event.key === growKey) next = current + 16;
++    else if (event.key === shrinkKey) next = current - 16;
++    else if (event.key === "Home")
++      next = axis === "x" ? MODEL_PICKER_MIN_WIDTH : MODEL_PICKER_MIN_HEIGHT;
++    else if (event.key === "End")
++      next = axis === "x" ? MODEL_PICKER_MAX_WIDTH : MODEL_PICKER_MAX_HEIGHT;
++    if (next === undefined) return;
++    event.preventDefault();
++    event.stopPropagation();
++    if (axis === "x") setWidth(next);
++    else setHeight(next);
++  };
++
+   return (
+     <TooltipProvider delay={0}>
+       <WindowKeyDownListener onKeyDown={onWindowKeyDown} />
+       <div
+         ref={pickerContentRef}
+         className={cn(
+-          "relative flex w-screen max-w-90 flex-row overflow-hidden",
+-          props.docked ? "max-sm:h-56 max-sm:w-full max-sm:max-w-none" : "max-h-86.5",
++          "relative flex flex-row overflow-hidden",
++          width === null &&
++            (props.docked
++              ? "w-screen max-w-90 max-sm:w-full max-sm:max-w-none"
++              : "w-screen max-w-90"),
++          props.docked && "max-sm:h-56",
++          !props.docked && height === null && "max-h-86.5",
+         )}
+-        // Docked, the popup sets the height; a minimum here would overflow short windows.
+-        style={
+-          props.docked
+-            ? undefined
+-            : isSearching
+-              ? { height: searchHeight }
+-              : {
+-                  minHeight: `min(calc(var(--spacing) * ${tallestTabUnits + LIST_CHROME_UNITS} + 1px), calc(var(--spacing) * 86.5))`,
++        // Docked, the popup row sets the height; a minimum here would overflow short windows.
++        // A user-resized height wins over the tab-matching minimum and the search freeze.
++        style={{
++          ...(width !== null
++            ? {
++                width: `var(${RESIZABLE_WIDTH_PROPERTY})`,
++                maxWidth: "var(--available-width, 100vw)",
++              }
++            : {}),
++          ...(!props.docked
++            ? height !== null
++              ? {
++                  height: `var(${RESIZABLE_HEIGHT_PROPERTY})`,
++                  maxHeight: "var(--available-height, 100vh)",
+                 }
+-        }
++              : isSearching
++                ? { height: searchHeight }
++                : {
++                    minHeight: `min(calc(var(--spacing) * ${tallestTabUnits + LIST_CHROME_UNITS} + 1px), calc(var(--spacing) * 86.5))`,
++                  }
++            : {}),
++        }}
+         data-model-picker-content="true"
+       >
+         {showSidebar && (
+@@ -936,7 +982,9 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
+               placeholder="Search models..."
+               value={searchQuery}
+               onChange={(e) => {
+-                if (!isSearching) setSearchHeight(pickerContentRef.current?.offsetHeight ?? 0);
++                // A user-resized height is fixed; the search freeze only exists to stop tab-switching jumps.
++                if (!isSearching && height === null)
++                  setSearchHeight(pickerContentRef.current?.offsetHeight ?? 0);
+                 setSearchQuery(e.target.value);
+               }}
+               onKeyDown={(e) => {
+@@ -1091,6 +1139,27 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
+             {props.listFooter}
+           </div>
+         </Combobox>
++        <ModelPickerResizeHandle
++          orientation="vertical"
++          label="Resize model picker width"
++          value={width ?? MODEL_PICKER_DEFAULT_WIDTH}
++          min={MODEL_PICKER_MIN_WIDTH}
++          max={MODEL_PICKER_MAX_WIDTH}
++          handlers={widthHandlers}
++          onKeyDown={handleResizeKeyDown("x")}
++          onDoubleClick={resetWidth}
++        />
++        <ModelPickerResizeHandle
++          orientation="horizontal"
++          side={popupSide}
++          label="Resize model picker height"
++          value={height ?? MODEL_PICKER_DEFAULT_HEIGHT}
++          min={MODEL_PICKER_MIN_HEIGHT}
++          max={MODEL_PICKER_MAX_HEIGHT}
++          handlers={heightHandlers}
++          onKeyDown={handleResizeKeyDown("y")}
++          onDoubleClick={resetHeight}
++        />
+       </div>
+     </TooltipProvider>
+   );
+diff --git a/apps/web/src/components/chat/ModelPickerResizeHandle.tsx b/apps/web/src/components/chat/ModelPickerResizeHandle.tsx
+new file mode 100644
+index 0000000..5194950
+--- /dev/null
++++ b/apps/web/src/components/chat/ModelPickerResizeHandle.tsx
+@@ -0,0 +1,74 @@
++import type { ComponentProps } from "react";
++import type { PointerEvent as ReactPointerEvent } from "react";
++import { cn } from "~/lib/utils";
++
++interface ModelPickerResizeHandlers {
++  ref: (node: HTMLElement | null) => (() => void) | undefined;
++  onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
++  onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
++  onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
++  onPointerCancel: (event: ReactPointerEvent<HTMLElement>) => void;
++  onLostPointerCapture: (event: ReactPointerEvent<HTMLElement>) => void;
++}
++
++interface ModelPickerResizeHandleProps extends Pick<
++  ComponentProps<"div">,
++  "onKeyDown" | "onDoubleClick"
++> {
++  /** "vertical" is the trailing-edge width handle, "horizontal" the free-edge height handle. */
++  orientation: "vertical" | "horizontal";
++  /** Horizontal handles only: which edge is opposite the popover's anchored side. */
++  side?: "top" | "bottom";
++  label: string;
++  value: number;
++  min: number;
++  max: number;
++  handlers: ModelPickerResizeHandlers;
++}
++
++export function ModelPickerResizeHandle({
++  orientation,
++  side,
++  label,
++  value,
++  min,
++  max,
++  handlers,
++  onKeyDown,
++  onDoubleClick,
++}: ModelPickerResizeHandleProps) {
++  const horizontal = orientation === "horizontal";
++  return (
++    <div
++      role="separator"
++      tabIndex={0}
++      aria-label={label}
++      aria-orientation={orientation}
++      aria-valuenow={Math.round(value)}
++      aria-valuemin={min}
++      aria-valuemax={max}
++      className={cn(
++        "group absolute z-20 touch-none select-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
++        horizontal
++          ? cn(
++              "inset-x-0 h-1.5 cursor-row-resize any-pointer-coarse:h-3",
++              side === "top" ? "top-0" : "bottom-0",
++            )
++          : "inset-y-0 right-0 w-1.5 cursor-col-resize any-pointer-coarse:w-3",
++      )}
++      onDoubleClick={onDoubleClick}
++      onKeyDown={onKeyDown}
++      {...handlers}
++    >
++      <span
++        aria-hidden
++        className={cn(
++          "pointer-events-none absolute rounded-full bg-transparent transition-colors duration-150 group-hover:bg-border group-focus-visible:bg-primary/60 group-active:bg-primary/60",
++          horizontal
++            ? cn("inset-x-6 h-0.5", side === "top" ? "top-0" : "bottom-0")
++            : "inset-y-6 right-0 w-0.5",
++        )}
++      />
++    </div>
++  );
++}
+diff --git a/apps/web/src/components/chat/ProviderModelPicker.browser.test.tsx b/apps/web/src/components/chat/ProviderModelPicker.browser.test.tsx
+index bf196f5..92fb719 100644
+--- a/apps/web/src/components/chat/ProviderModelPicker.browser.test.tsx
++++ b/apps/web/src/components/chat/ProviderModelPicker.browser.test.tsx
+@@ -10,7 +10,7 @@ import { page, userEvent } from "vite-plus/test/browser";
+ 
+ import "~/index.css";
+ 
+-import { render } from "../../../test/render";
++import { act, render } from "../../../test/render";
+ import { __setClientSettingsForTests } from "../../hooks/useSettings";
+ import { deriveProviderInstanceEntries } from "../../providerInstances";
+ import { ProviderModelPicker } from "./ProviderModelPicker";
+@@ -176,6 +176,115 @@ it("keeps a docked picker open after a pick and hands focus to that model's effo
+   await expect.element(search).not.toBeInTheDocument();
+ });
+ 
++it("resizes by dragging its edges, persists the size, and resets on double-click", async () => {
++  localStorage.removeItem("t3code.modelPickerWidth");
++  localStorage.removeItem("t3code.modelPickerHeight");
++  using _storage = {
++    [Symbol.dispose]: () => {
++      localStorage.removeItem("t3code.modelPickerWidth");
++      localStorage.removeItem("t3code.modelPickerHeight");
++    },
++  };
++  const instanceId = ProviderInstanceId.make("codex");
++  const entries = deriveProviderInstanceEntries([
++    {
++      instanceId,
++      driver: ProviderDriverKind.make("codex"),
++      enabled: true,
++      installed: true,
++      version: null,
++      status: "ready" as const,
++      auth: { status: "authenticated" as const },
++      checkedAt: "2026-01-01T00:00:00.000Z",
++      models: [{ slug: "original", name: "Original model", isCustom: false, capabilities: {} }],
++      slashCommands: [],
++      skills: [],
++    },
++  ]);
++  const options = new Map([
++    [
++      instanceId,
++      [
++        { slug: "original", name: "Original model" },
++        { slug: "second", name: "Second model" },
++      ],
++    ],
++  ]);
++
++  await using screen = await render(
++    <ProviderModelPicker
++      environmentId={null}
++      activeInstanceId={instanceId}
++      model="original"
++      lockedProvider={null}
++      instanceEntries={entries}
++      modelOptionsByInstance={options}
++      triggerAriaLabel="Choose model"
++      onInstanceModelChange={() => {}}
++    />,
++  );
++  await screen.getByRole("button", { name: "Choose model" }).click();
++  const popup = document.querySelector<HTMLElement>('[data-slot="popover-popup"]')!;
++  const initialWidth = popup.getBoundingClientRect().width;
++  const initialHeight = popup.getBoundingClientRect().height;
++
++  const fire = (type: string, x: number, y: number) =>
++    new PointerEvent(type, {
++      bubbles: true,
++      cancelable: true,
++      pointerId: 1,
++      isPrimary: true,
++      button: 0,
++      buttons: type === "pointerup" ? 0 : 1,
++      clientX: x,
++      clientY: y,
++    });
++
++  const widthHandle = page.getByRole("separator", { name: "Resize model picker width" });
++  const widthBounds = widthHandle.element().getBoundingClientRect();
++  const widthStart = widthBounds.left + widthBounds.width / 2;
++  const widthY = widthBounds.top + widthBounds.height / 2;
++  await act(() => {
++    widthHandle.element().dispatchEvent(fire("pointerdown", widthStart, widthY));
++    widthHandle.element().dispatchEvent(fire("pointermove", widthStart + 80, widthY));
++  });
++  await vi.waitFor(() => {
++    expect(popup.getBoundingClientRect().width).toBeGreaterThan(initialWidth + 40);
++  });
++  await act(() => {
++    widthHandle.element().dispatchEvent(fire("pointerup", widthStart + 80, widthY));
++  });
++  expect(Number(localStorage.getItem("t3code.modelPickerWidth"))).toBeGreaterThan(
++    initialWidth + 40,
++  );
++
++  const heightHandle = page.getByRole("separator", { name: "Resize model picker height" });
++  const heightBounds = heightHandle.element().getBoundingClientRect();
++  const heightX = heightBounds.left + heightBounds.width / 2;
++  const heightStart = heightBounds.top + heightBounds.height / 2;
++  await act(() => {
++    heightHandle.element().dispatchEvent(fire("pointerdown", heightX, heightStart));
++    heightHandle.element().dispatchEvent(fire("pointermove", heightX, heightStart + 60));
++  });
++  await vi.waitFor(() => {
++    expect(popup.getBoundingClientRect().height).toBeGreaterThan(initialHeight + 30);
++  });
++  await act(() => {
++    heightHandle.element().dispatchEvent(fire("pointerup", heightX, heightStart + 60));
++  });
++  expect(Number(localStorage.getItem("t3code.modelPickerHeight"))).toBeGreaterThan(
++    initialHeight + 30,
++  );
++
++  widthHandle.element().focus();
++  const widthBeforeKeys = Number(localStorage.getItem("t3code.modelPickerWidth"));
++  await userEvent.keyboard("{ArrowRight}{ArrowRight}");
++  expect(Number(localStorage.getItem("t3code.modelPickerWidth"))).toBe(widthBeforeKeys + 32);
++
++  await userEvent.dblClick(widthHandle);
++  expect(localStorage.getItem("t3code.modelPickerWidth")).toBeNull();
++});
++
+ it("opens on the active provider when every favorite belongs to a disabled provider", async () => {
+   const entries = deriveProviderInstanceEntries(
+     ["Codex", "Claude"].map((name) => ({
+diff --git a/apps/web/src/components/chat/ProviderModelPicker.tsx b/apps/web/src/components/chat/ProviderModelPicker.tsx
+index 635fc45..3697f13 100644
+--- a/apps/web/src/components/chat/ProviderModelPicker.tsx
++++ b/apps/web/src/components/chat/ProviderModelPicker.tsx
+@@ -441,9 +441,10 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
+       >
+         {props.effortColumn ? (
+           <div className="flex max-h-(--available-height) flex-col">
+-            {/* One fixed height, so a model with more options never resizes the popup. Short
+-                  windows shrink it and keep the footer. */}
+-            <div className="flex h-86.5 min-h-0 max-sm:h-auto max-sm:flex-col">
++            {/* One height, so a model with more options never resizes the popup. Short
++                  windows shrink it and keep the footer. A user-resized height arrives via the popup's
++                  inherited --resizable-height (fallback is the old h-86.5). */}
++            <div className="flex h-(--resizable-height,21.625rem) min-h-0 max-sm:flex-col">
+               {picker}
+               <div
+                 data-model-picker-effort
+diff --git a/apps/web/src/components/chat/useModelPickerResize.ts b/apps/web/src/components/chat/useModelPickerResize.ts
+new file mode 100644
+index 0000000..7c008f3
+--- /dev/null
++++ b/apps/web/src/components/chat/useModelPickerResize.ts
+@@ -0,0 +1,203 @@
++import * as Schema from "effect/Schema";
++import { type RefObject, useEffectEvent, useLayoutEffect, useState } from "react";
++
++import {
++  getLocalStorageItem,
++  removeLocalStorageItem,
++  setLocalStorageItem,
++} from "../../hooks/useLocalStorage";
++import { useResizeDrag } from "../../hooks/useResizeDrag";
++import { RESIZABLE_WIDTH_PROPERTY } from "../../hooks/useResizableWidth";
++
++const SizeSchema = Schema.Finite;
++
++export const RESIZABLE_HEIGHT_PROPERTY = "--resizable-height";
++
++const WIDTH_STORAGE_KEY = "t3code.modelPickerWidth";
++const HEIGHT_STORAGE_KEY = "t3code.modelPickerHeight";
++
++export const MODEL_PICKER_MIN_WIDTH = 288;
++export const MODEL_PICKER_MAX_WIDTH = 720;
++export const MODEL_PICKER_MIN_HEIGHT = 224;
++export const MODEL_PICKER_MAX_HEIGHT = 720;
++export const MODEL_PICKER_DEFAULT_WIDTH = 360;
++// h-86.5 == calc(var(--spacing) * 86.5) == 21.625rem.
++export const MODEL_PICKER_DEFAULT_HEIGHT = 346;
++
++function clamp(value: number, min: number, max: number): number {
++  if (!Number.isFinite(value)) return min;
++  return Math.max(min, Math.min(max, value));
++}
++
++function readStoredSize(key: string, min: number, max: number): number | null {
++  if (typeof window === "undefined") return null;
++  try {
++    const stored = getLocalStorageItem(key, SizeSchema);
++    return stored === null ? null : clamp(stored, min, max);
++  } catch (error) {
++    console.error("Could not read persisted model picker size.", error);
++    return null;
++  }
++}
++
++function readPopupSide(popup: Element | null): "top" | "bottom" {
++  return popup?.getAttribute("data-side") === "top" ? "top" : "bottom";
++}
++
++/**
++ * Persisted, drag-resizable width and height for the model picker popup.
++ * The popup sizes to content, so sizes land on its `[data-slot="popover-popup"]`
++ * ancestor; `width`/`height` stay null until the user resizes.
++ */
++export function useModelPickerResize(hostRef: RefObject<HTMLDivElement | null>) {
++  const [width, setWidth] = useState<number | null>(() =>
++    readStoredSize(WIDTH_STORAGE_KEY, MODEL_PICKER_MIN_WIDTH, MODEL_PICKER_MAX_WIDTH),
++  );
++  const [height, setHeight] = useState<number | null>(() =>
++    readStoredSize(HEIGHT_STORAGE_KEY, MODEL_PICKER_MIN_HEIGHT, MODEL_PICKER_MAX_HEIGHT),
++  );
++  const [popupSide, setPopupSide] = useState<"top" | "bottom">("bottom");
++
++  const popupOf = () =>
++    hostRef.current?.closest<HTMLElement>('[data-slot="popover-popup"]') ?? null;
++
++  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- applies persisted sizes and mirrors the popup's data-side; width/height only change on commit or reset, and re-applying is idempotent
++  useLayoutEffect(() => {
++    const popup = hostRef.current?.closest<HTMLElement>('[data-slot="popover-popup"]') ?? null;
++    if (!popup) return;
++    const apply = (axis: "x" | "y", value: number | null) => {
++      const property = axis === "x" ? RESIZABLE_WIDTH_PROPERTY : RESIZABLE_HEIGHT_PROPERTY;
++      const inline = axis === "x" ? "width" : "height";
++      if (value === null) {
++        popup.style.removeProperty(property);
++        popup.style.removeProperty(inline);
++        return;
++      }
++      popup.style.setProperty(property, `${value}px`);
++      popup.style.setProperty(inline, `${value}px`);
++    };
++    apply("x", width);
++    apply("y", height);
++    // Base UI flips the popup between side=top and side=bottom; the height handle has to follow.
++    const readSide = () => setPopupSide(readPopupSide(popup));
++    readSide();
++    const observer = new MutationObserver(readSide);
++    observer.observe(popup, { attributes: true, attributeFilter: ["data-side"] });
++    return () => observer.disconnect();
++  }, [hostRef, width, height]);
++
++  const commit = (axis: "x" | "y", value: number | null) => {
++    const property = axis === "x" ? RESIZABLE_WIDTH_PROPERTY : RESIZABLE_HEIGHT_PROPERTY;
++    const inline = axis === "x" ? "width" : "height";
++    const storageKey = axis === "x" ? WIDTH_STORAGE_KEY : HEIGHT_STORAGE_KEY;
++    const popup = popupOf();
++    if (value === null) {
++      popup?.style.removeProperty(property);
++      popup?.style.removeProperty(inline);
++      if (axis === "x") setWidth(null);
++      else setHeight(null);
++      try {
++        removeLocalStorageItem(storageKey);
++      } catch (error) {
++        console.error("Could not persist model picker size.", error);
++      }
++      return;
++    }
++    const clamped =
++      axis === "x"
++        ? clamp(value, MODEL_PICKER_MIN_WIDTH, MODEL_PICKER_MAX_WIDTH)
++        : clamp(value, MODEL_PICKER_MIN_HEIGHT, MODEL_PICKER_MAX_HEIGHT);
++    popup?.style.setProperty(property, `${clamped}px`);
++    popup?.style.setProperty(inline, `${clamped}px`);
++    if (axis === "x") setWidth(clamped);
++    else setHeight(clamped);
++    try {
++      setLocalStorageItem(storageKey, clamped, SizeSchema);
++    } catch (error) {
++      console.error("Could not persist model picker size.", error);
++    }
++  };
++  const commitAxis = useEffectEvent(commit);
++
++  const widthDrag = useResizeDrag<HTMLElement>(() => {
++    const host = hostRef.current;
++    const popup = popupOf();
++    if (!host) return null;
++    popup?.style.setProperty("transition-property", "none");
++    const startWidth = width ?? host.getBoundingClientRect().width;
++    return {
++      axis: "x",
++      width: startWidth,
++      edge: "right",
++      bounds: { min: MODEL_PICKER_MIN_WIDTH, max: MODEL_PICKER_MAX_WIDTH },
++      resize(nextWidth) {
++        popup?.style.setProperty(RESIZABLE_WIDTH_PROPERTY, `${nextWidth}px`);
++        popup?.style.setProperty("width", `${nextWidth}px`);
++        return nextWidth;
++      },
++      finish(finalWidth, moved) {
++        if (moved) commitAxis("x", finalWidth);
++      },
++      cleanup(committed) {
++        popup?.style.removeProperty("transition-property");
++        if (!committed) commitAxis("x", width);
++      },
++    };
++  });
++
++  const heightDrag = useResizeDrag<HTMLElement>(() => {
++    const host = hostRef.current;
++    const popup = popupOf();
++    if (!host) return null;
++    popup?.style.setProperty("transition-property", "none");
++    const startHeight = height ?? host.getBoundingClientRect().height;
++    const edge = readPopupSide(popup) === "top" ? "top" : "bottom";
++    return {
++      axis: "y",
++      width: startHeight,
++      edge,
++      bounds: { min: MODEL_PICKER_MIN_HEIGHT, max: MODEL_PICKER_MAX_HEIGHT },
++      resize(nextHeight) {
++        popup?.style.setProperty(RESIZABLE_HEIGHT_PROPERTY, `${nextHeight}px`);
++        popup?.style.setProperty("height", `${nextHeight}px`);
++        return nextHeight;
++      },
++      finish(finalHeight, moved) {
++        if (moved) commitAxis("y", finalHeight);
++      },
++      cleanup(committed) {
++        popup?.style.removeProperty("transition-property");
++        if (!committed) commitAxis("y", height);
++      },
++    };
++  });
++
++  const setAxis = (axis: "x" | "y", value: number) => commitAxis(axis, value);
++  const resetAxis = (axis: "x" | "y") => commitAxis(axis, null);
++
++  return {
++    width,
++    height,
++    popupSide,
++    widthHandlers: {
++      ref: widthDrag.ref,
++      onPointerDown: widthDrag.onPointerDown,
++      onPointerMove: widthDrag.onPointerMove,
++      onPointerUp: widthDrag.onPointerUp,
++      onPointerCancel: widthDrag.onPointerCancel,
++      onLostPointerCapture: widthDrag.onLostPointerCapture,
++    },
++    heightHandlers: {
++      ref: heightDrag.ref,
++      onPointerDown: heightDrag.onPointerDown,
++      onPointerMove: heightDrag.onPointerMove,
++      onPointerUp: heightDrag.onPointerUp,
++      onPointerCancel: heightDrag.onPointerCancel,
++      onLostPointerCapture: heightDrag.onLostPointerCapture,
++    },
++    setWidth: (value: number) => setAxis("x", value),
++    setHeight: (value: number) => setAxis("y", value),
++    resetWidth: () => resetAxis("x"),
++    resetHeight: () => resetAxis("y"),
++  };
++}
+diff --git a/apps/web/src/hooks/useResizeDrag.ts b/apps/web/src/hooks/useResizeDrag.ts
+index 06a65d9..cd5a74b 100644
+--- a/apps/web/src/hooks/useResizeDrag.ts
++++ b/apps/web/src/hooks/useResizeDrag.ts
+@@ -5,13 +5,17 @@ export interface ResizeBounds {
+   readonly max: number;
+ }
+ 
++export type ResizeAxis = "x" | "y";
++
+ interface ResizeSession {
+   width: number;
+-  edge: "left" | "right";
+-  /** Pointer widths are clamped to these before `resize` sees them. */
++  edge: "left" | "right" | "top" | "bottom";
++  /** Defaults to "x". */
++  axis?: ResizeAxis;
++  /** Pointer sizes are clamped to these before `resize` sees them. */
+   bounds: ResizeBounds;
+-  resize: (width: number) => number;
+-  finish: (width: number, moved: boolean) => void;
++  resize: (size: number) => number;
++  finish: (size: number, moved: boolean) => void;
+   cleanup?: (committed: boolean) => void;
+ }
+ 
+@@ -23,21 +27,26 @@ interface ActiveDrag<T extends HTMLElement> {
+   session: ResizeSession;
+   target: T;
+   pointerId: number;
+-  startX: number;
+-  pendingX: number;
++  start: number;
++  pending: number;
+   width: number;
+   moved: boolean;
+   frame: number | null;
+   onBlur: () => void;
+ }
+ 
++function positionAlong(axis: ResizeAxis, event: { clientX: number; clientY: number }): number {
++  return axis === "y" ? event.clientY : event.clientX;
++}
++
+ function createResizeDrag<T extends HTMLElement>() {
+   let drag: ActiveDrag<T> | null = null;
+ 
+   const flush = () => {
+     const active = drag;
+     if (!active) return;
+-    const delta = (active.pendingX - active.startX) * (active.session.edge === "left" ? -1 : 1);
++    const sign = active.session.edge === "left" || active.session.edge === "top" ? -1 : 1;
++    const delta = (active.pending - active.start) * sign;
+     if (Math.abs(delta) > 2) active.moved = true;
+     active.width = active.session.resize(
+       clampToBounds(active.session.width + delta, active.session.bounds),
+@@ -67,7 +76,7 @@ function createResizeDrag<T extends HTMLElement>() {
+     const active = drag;
+     if (!active || active.pointerId !== event.pointerId) return;
+     event.preventDefault();
+-    if (usePosition) active.pendingX = event.clientX;
++    if (usePosition) active.pending = positionAlong(active.session.axis ?? "x", event);
+     finish(true);
+   };
+ 
+@@ -83,6 +92,7 @@ function createResizeDrag<T extends HTMLElement>() {
+       if (event.button !== 0 || drag) return;
+       const session = start(event);
+       if (!session) return;
++      const axis = session.axis ?? "x";
+       try {
+         event.currentTarget.setPointerCapture(event.pointerId);
+       } catch {
+@@ -94,26 +104,28 @@ function createResizeDrag<T extends HTMLElement>() {
+       // Leaving the window mid-drag commits where the pointer was.
+       const onBlur = () => finish(true);
+       window.addEventListener("blur", onBlur);
++      const startPosition = positionAlong(axis, event);
+       drag = {
+         session,
+         target: event.currentTarget,
+         pointerId: event.pointerId,
+-        startX: event.clientX,
+-        pendingX: event.clientX,
++        start: startPosition,
++        pending: startPosition,
+         width: session.width,
+         moved: false,
+         frame: null,
+         onBlur,
+       };
+-      document.body.style.cursor = "col-resize";
++      document.body.style.cursor = axis === "y" ? "row-resize" : "col-resize";
+       document.body.style.userSelect = "none";
+     },
+     onPointerMove(event: PointerEvent<T>) {
+       const active = drag;
+       if (!active || active.pointerId !== event.pointerId) return;
+       event.preventDefault();
+-      active.pendingX = event.clientX;
+-      if (Math.abs(event.clientX - active.startX) > 2) active.moved = true;
++      const position = positionAlong(active.session.axis ?? "x", event);
++      active.pending = position;
++      if (Math.abs(position - active.start) > 2) active.moved = true;
+       if (active.frame !== null) return;
+       active.frame = requestAnimationFrame(() => {
+         active.frame = null;
