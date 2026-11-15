@@ -24,6 +24,7 @@
       <div class="session-tab-bar">
         <button class="tab-scroll tab-scroll-previous" type="button" aria-label="Scroll tabs left" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 4 6 8 10 12" /></svg></button>
         <div class="session-tabs" id="session-tabs" role="tablist" aria-label="Sessions">
+          <button type="button" role="tab" id="tab-windows-again" aria-controls="session-windows-again" aria-selected="false" tabindex="-1">Git + PS hard</button>
           <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="true" tabindex="0">Not too deep</button>
           <button type="button" role="tab" id="tab-lost-in-wsl" aria-controls="session-lost-in-wsl" aria-selected="false" tabindex="-1">Lost in WSL</button>
           <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
@@ -139,6 +140,23 @@
           <p>It should have traced how Base UI updates the positioner when picker content changes size, or identified that behavior as an assumption to verify.</p>
         </div>
         <div class="session-links"><a href="sessions/not-too-deep.json">View the full session JSON</a><a href="https://github.com/pingdotgg/t3code/tree/166cb008972b63a0537a5cdda153c45ac70f86eb">Code repository at commit</a></div>
+      </section>
+
+      <section class="session-panel" role="tabpanel" id="session-windows-again" aria-labelledby="tab-windows-again" tabindex="0" hidden>
+        <h2>Git + PS hard</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>Clone a fresh copy of t3 here, then, go merge a couple PRS</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>Despite working in PowerShell on Windows, the agent repeatedly ran into shell-specific problems. It tried <code>&amp;&amp;</code>, which this PowerShell version rejected, and its quoting failed twice when listing PRs and twice when creating a merge commit. Later, removing its temporary worktree hit a Windows path-length limit. The agent worked around each issue as it appeared, but did not consistently account for the environment ahead of time.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have adapted its commands to the actual PowerShell version and checked how arguments were passed to native Windows programs after failing once or twice. It also should have anticipated Windows path-length constraints.</p>
+        </div>
+        <div class="session-links"><a href="sessions/clone-t3-and-merge-prs.json">View the full session JSON</a><a href="https://github.com/pingdotgg/t3code/tree/aace48bfe4a8df0194d28909eadeed7400d196f4">Code repository at commit</a></div>
       </section>
     </div>
     <footer><p><a href="https://github.com/zarrytink/inkling-for-greatness">View this site's repository</a></p></footer>
