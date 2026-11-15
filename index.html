@@ -27,6 +27,7 @@
         <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
         <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
         <button type="button" role="tab" id="tab-lost-in-wsl" aria-controls="session-lost-in-wsl" aria-selected="false" tabindex="-1">Lost in WSL</button>
+        <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="false" tabindex="-1">Not too deep</button>
       </div>
 
       <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
@@ -117,6 +118,23 @@
         </div>
         <div class="session-links"><a href="sessions/lost-in-wsl.json">View the full session JSON</a></div>
         <p class="additional-note"><strong>Note:</strong> I know it was technically my fault for running the agent in WSL, but I believe it should have recognized that it was running inside WSL.</p>
+      </section>
+
+      <section class="session-panel" role="tabpanel" id="session-not-too-deep" aria-labelledby="tab-not-too-deep" tabindex="0" hidden>
+        <h2>Not too deep</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>How would you remove the fade from the model picker, and how would you make it resizable</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent questioned how Base UI measures the popup, then said "Let me not go too deep." Its plan nevertheless asserted that changing the content size would propagate to the popup.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have traced how Base UI updates the positioner when picker content changes size, or identified that behavior as an assumption to verify.</p>
+        </div>
+        <div class="session-links"><a href="sessions/not-too-deep.json">View the full session JSON</a><a href="https://github.com/pingdotgg/t3code/tree/166cb008972b63a0537a5cdda153c45ac70f86eb">Code repository at commit</a></div>
       </section>
     </div>
     <footer><p><a href="https://github.com/zarrytink/inkling-for-greatness">View this site's repository</a></p></footer>
