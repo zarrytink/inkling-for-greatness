@@ -24,17 +24,17 @@
       <div class="session-tab-bar">
         <button class="tab-scroll tab-scroll-previous" type="button" aria-label="Scroll tabs left" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 4 6 8 10 12" /></svg></button>
         <div class="session-tabs" id="session-tabs" role="tablist" aria-label="Sessions">
-          <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
-          <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
-          <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
-          <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
+          <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="true" tabindex="0">Not too deep</button>
           <button type="button" role="tab" id="tab-lost-in-wsl" aria-controls="session-lost-in-wsl" aria-selected="false" tabindex="-1">Lost in WSL</button>
-          <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="false" tabindex="-1">Not too deep</button>
+          <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
+          <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
+          <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
+          <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="false" tabindex="-1">Aegisub shell context menu</button>
         </div>
         <button class="tab-scroll tab-scroll-next" type="button" aria-label="Scroll tabs right" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4 10 8 6 12" /></svg></button>
       </div>
 
-      <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
+      <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0" hidden>
         <h2>Aegisub shell context menu</h2>
         <div class="entry">
           <h3>Prompt:</h3>
@@ -124,7 +124,7 @@
         <p class="additional-note"><strong>Note:</strong> I know it was technically my fault for running the agent in WSL, but I believe it should have recognized that it was running inside WSL.</p>
       </section>
 
-      <section class="session-panel" role="tabpanel" id="session-not-too-deep" aria-labelledby="tab-not-too-deep" tabindex="0" hidden>
+      <section class="session-panel" role="tabpanel" id="session-not-too-deep" aria-labelledby="tab-not-too-deep" tabindex="0">
         <h2>Not too deep</h2>
         <div class="entry">
           <h3>Prompt:</h3>
