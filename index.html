@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="OpenCode Inkling 2 Small sessions that went wrong.">
   <title>Inkling for Greatness</title>
-  <link rel="stylesheet" href="style.css?v=9">
-  <script src="tabs.js?v=1" defer></script>
+  <link rel="stylesheet" href="style.css?v=11">
+  <script src="tabs.js?v=2" defer></script>
   <script src="theme.js?v=1" defer></script>
 </head>
 <body>
@@ -21,13 +21,17 @@
     </header>
 
     <div class="frame">
-      <div class="session-tabs" role="tablist" aria-label="Sessions">
-        <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
-        <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
-        <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
-        <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
-        <button type="button" role="tab" id="tab-lost-in-wsl" aria-controls="session-lost-in-wsl" aria-selected="false" tabindex="-1">Lost in WSL</button>
-        <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="false" tabindex="-1">Not too deep</button>
+      <div class="session-tab-bar">
+        <button class="tab-scroll tab-scroll-previous" type="button" aria-label="Scroll tabs left" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 4 6 8 10 12" /></svg></button>
+        <div class="session-tabs" id="session-tabs" role="tablist" aria-label="Sessions">
+          <button type="button" role="tab" id="tab-aegisub" aria-controls="session-aegisub" aria-selected="true" tabindex="0">Aegisub shell context menu</button>
+          <button type="button" role="tab" id="tab-clone" aria-controls="session-clone" aria-selected="false" tabindex="-1">Cloning the wrong repository</button>
+          <button type="button" role="tab" id="tab-installern-t" aria-controls="session-installern-t" aria-selected="false" tabindex="-1">Installern't</button>
+          <button type="button" role="tab" id="tab-question-execution" aria-controls="session-question-execution" aria-selected="false" tabindex="-1">Question=Execution</button>
+          <button type="button" role="tab" id="tab-lost-in-wsl" aria-controls="session-lost-in-wsl" aria-selected="false" tabindex="-1">Lost in WSL</button>
+          <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="false" tabindex="-1">Not too deep</button>
+        </div>
+        <button class="tab-scroll tab-scroll-next" type="button" aria-label="Scroll tabs right" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4 10 8 6 12" /></svg></button>
       </div>
 
       <section class="session-panel" role="tabpanel" id="session-aegisub" aria-labelledby="tab-aegisub" tabindex="0">
