@@ -24,6 +24,7 @@
       <div class="session-tab-bar">
         <button class="tab-scroll tab-scroll-previous" type="button" aria-label="Scroll tabs left" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 4 6 8 10 12" /></svg></button>
         <div class="session-tabs" id="session-tabs" role="tablist" aria-label="Sessions">
+          <button type="button" role="tab" id="tab-dangers-of-med" aria-controls="session-dangers-of-med" aria-selected="false" tabindex="-1">Dangers of med</button>
           <button type="button" role="tab" id="tab-big-search" aria-controls="session-big-search" aria-selected="false" tabindex="-1">Big searches</button>
           <button type="button" role="tab" id="tab-logs-are-hard" aria-controls="session-logs-are-hard" aria-selected="false" tabindex="-1">Logs are hard</button>
           <button type="button" role="tab" id="tab-medium-disaster" aria-controls="session-medium-disaster" aria-selected="false" tabindex="-1">Disaster</button>
@@ -38,6 +39,22 @@
         <button class="tab-scroll tab-scroll-next" type="button" aria-label="Scroll tabs right" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4 10 8 6 12" /></svg></button>
       </div>
 
+      <section class="session-panel" role="tabpanel" id="session-dangers-of-med" aria-labelledby="tab-dangers-of-med" tabindex="0" hidden>
+        <h2>Dangers of med</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>Alright, commit [the work you just did]</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent accidentally included an already-staged adapter file in its first commit, reset the commit, and attempted a path-limited commit. Its pre-commit hook then failed and reported that it was reverting changes.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have noticed the already-staged adapter in the status output and used a path-limited commit from the start. After the hook failed, it should have verified that all changes were preserved.</p>
+        </div>
+        <div class="session-links"><a href="sessions/dangers-of-medium.json">View the full session JSON</a></div>
+      </section>
       <section class="session-panel" role="tabpanel" id="session-big-search" aria-labelledby="tab-big-search" tabindex="0" hidden>
         <h2>Big searches</h2>
         <div class="entry">
