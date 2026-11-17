@@ -24,6 +24,7 @@
       <div class="session-tab-bar">
         <button class="tab-scroll tab-scroll-previous" type="button" aria-label="Scroll tabs left" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 4 6 8 10 12" /></svg></button>
         <div class="session-tabs" id="session-tabs" role="tablist" aria-label="Sessions">
+          <button type="button" role="tab" id="tab-logs-are-hard" aria-controls="session-logs-are-hard" aria-selected="false" tabindex="-1">Logs are hard</button>
           <button type="button" role="tab" id="tab-medium-disaster" aria-controls="session-medium-disaster" aria-selected="false" tabindex="-1">Disaster</button>
           <button type="button" role="tab" id="tab-windows-again" aria-controls="session-windows-again" aria-selected="false" tabindex="-1">Git + PS hard</button>
           <button type="button" role="tab" id="tab-not-too-deep" aria-controls="session-not-too-deep" aria-selected="true" tabindex="0">Not too deep</button>
@@ -36,6 +37,22 @@
         <button class="tab-scroll tab-scroll-next" type="button" aria-label="Scroll tabs right" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4 10 8 6 12" /></svg></button>
       </div>
 
+      <section class="session-panel" role="tabpanel" id="session-logs-are-hard" aria-labelledby="tab-logs-are-hard" tabindex="0" hidden>
+        <h2>Logs are hard</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>Can you check out why my installed PIA just dropped connection?</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent considered that VPN dropped and reconnected, but concluded that handshakes proved the tunnel never dropped. It then attributed the reported disconnect to a stale UI without verifying. It also saw that the live daemon log was reported as 0 bytes, which it didn&#39;t initially flag as odd, and when it said it&#39;s going to check, it didn&#39;t. And finally, it read a log binary, which I&#39;m not sure i&#39;m comfortable with.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should&#39;ve treated the connected state and successful handshakes as evidence of recovery, not uninterrupted service. It should&#39;ve flagged 0 byte log file as suspicious, and try reading the live daemon log.</p>
+        </div>
+        <div class="session-links"><a href="sessions/logs-are-hard.json">View the full session JSON</a><a href="https://github.com/pia-foss/desktop">Code repository</a></div>
+      </section>
       <section class="session-panel" role="tabpanel" id="session-medium-disaster" aria-labelledby="tab-medium-disaster" tabindex="0" hidden>
         <h2>Disaster</h2>
         <div class="entry">
