@@ -24,6 +24,7 @@
       <div class="session-tab-bar">
         <button class="tab-scroll tab-scroll-previous" type="button" aria-label="Scroll tabs left" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 4 6 8 10 12" /></svg></button>
         <div class="session-tabs" id="session-tabs" role="tablist" aria-label="Sessions">
+          <button type="button" role="tab" id="tab-big-search" aria-controls="session-big-search" aria-selected="false" tabindex="-1">Big searches</button>
           <button type="button" role="tab" id="tab-logs-are-hard" aria-controls="session-logs-are-hard" aria-selected="false" tabindex="-1">Logs are hard</button>
           <button type="button" role="tab" id="tab-medium-disaster" aria-controls="session-medium-disaster" aria-selected="false" tabindex="-1">Disaster</button>
           <button type="button" role="tab" id="tab-windows-again" aria-controls="session-windows-again" aria-selected="false" tabindex="-1">Git + PS hard</button>
@@ -37,6 +38,22 @@
         <button class="tab-scroll tab-scroll-next" type="button" aria-label="Scroll tabs right" aria-controls="session-tabs" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4 10 8 6 12" /></svg></button>
       </div>
 
+      <section class="session-panel" role="tabpanel" id="session-big-search" aria-labelledby="tab-big-search" tabindex="0" hidden>
+        <h2>Big searches</h2>
+        <div class="entry">
+          <h3>Prompt:</h3>
+          <blockquote>In the isolated worktree provided by T3, integrate the latest upstream/main into the parent&#39;s current main commit (72adc99034).</blockquote>
+        </div>
+        <div class="entry">
+          <h3>What agent did wrong:</h3>
+          <p>The agent recursively read files across multiple directories using <code>Get-ChildItem</code> piped to <code>Select-String</code> to search for conflict markers. It finished with no matching paths. Later, another recursive scan for <code>.orig</code> and <code>.rej</code> files timed out after two minutes without output. This is not a one-off. In several other sessions the agent gravitated toward similarly broad searches.</p>
+        </div>
+        <div class="entry">
+          <h3>What agent should've done:</h3>
+          <p>It should have considered more targeted search methods.</p>
+        </div>
+        <div class="session-links"><a href="sessions/big-search.json">View the full session JSON</a></div>
+      </section>
       <section class="session-panel" role="tabpanel" id="session-logs-are-hard" aria-labelledby="tab-logs-are-hard" tabindex="0" hidden>
         <h2>Logs are hard</h2>
         <div class="entry">
